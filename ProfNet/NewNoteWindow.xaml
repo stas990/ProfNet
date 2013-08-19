@@ -1,0 +1,26 @@
+﻿<Window x:Class="ProfNet.NewNoteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NewNoteWindow" SizeToContent="Height" Width="300" Style="{DynamicResource EmptyWindow}" 
+		WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+		Loaded="Window_Loaded">
+	<Window.CommandBindings>
+		<CommandBinding x:Name="CloseCommand" Executed="CloseCommand_Executed" CanExecute="CloseCommand_CanExecute" Command="Close"/>
+		<CommandBinding x:Name="OkCommand" Executed="OkCommand_Executed" CanExecute="OkCommand_CanExecute" Command="New"/>
+	</Window.CommandBindings>
+	<Window.InputBindings>
+		<KeyBinding Gesture="Esc" Command="Close"/>
+		<KeyBinding Gesture="Enter" Command="New"/>
+	</Window.InputBindings>
+    <Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		
+		<TextBlock Text="Enter note name:" Margin="3"/>
+		
+		<TextBox Focusable="True" Name="NameBox" Grid.Row="1" Margin="3,0,3,3"/>
+	</Grid>
+</Window>

@@ -1,0 +1,166 @@
+﻿<Window x:Class="ProfNet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:avalonDock="http://avalondock.codeplex.com"
+        xmlns:Model="clr-namespace:ProfNet.Model" xmlns:WpfAvalonTest="clr-namespace:ProfNet"
+        xmlns:System="clr-namespace:System;assembly=mscorlib" xmlns:Note="clr-namespace:ProfNet.Model.Notes"
+        xmlns:Operations="clr-namespace:ProfNet.Model.Profiling.Operations" Title="ProfNet" Height="800" Width="1024" Closing="Window_Closing" Loaded="Window_Loaded">
+	<Window.Resources>
+		<avalonDock:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <WpfAvalonTest:BooleanInvertorConverter x:Key="BoolInverter"/>
+	</Window.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		<Menu>
+			<Menu.Background>
+				<LinearGradientBrush EndPoint="0.504,1.5" StartPoint="0.504,0.03">
+					<GradientStop Color="#CAD3E2" Offset="0"/>
+					<GradientStop Color="#AEB9CD" Offset="0.5"/>
+				</LinearGradientBrush>
+			</Menu.Background>
+			<MenuItem Header="_File">
+                <MenuItem Header="Start profiling" Command="{Binding Path=ProfilingProcess.StartProfilingCommand}"
+                           IsEnabled="{Binding ProfilingProcess.InProgress, Converter={StaticResource BoolInverter}}"
+                           CommandParameter="{x:Static Operations:ProfilingOperations.Executable}">
+					<MenuItem.Icon>
+                        <WpfAvalonTest:AutoGreyableImage Source="Icons/FormRunHS.png" Width="16" Height="16"/>
+					</MenuItem.Icon>
+				</MenuItem>
+				<!--<MenuItem Header="Attach to Process..." Command="{Binding Path=StartProcessProfilingCommand}"/>-->
+			</MenuItem>
+			<MenuItem Header="_View">
+				<MenuItem Header="_Notes" IsCheckable="True" IsChecked="{Binding Notes.IsVisible}"/>
+			</MenuItem>
+            <MenuItem Header="_Tools">
+				<MenuItem Header="Notes">
+					<MenuItem Header="Create note" Command="{Binding Notes.NewNoteCommand}">
+						<MenuItem.Icon>
+							<WpfAvalonTest:AutoGreyableImage Source="Icons/paste_32x32.png" Width="16" Height="16"/>
+						</MenuItem.Icon>
+					</MenuItem>
+					<MenuItem Header="Delete selected Note" Command="{Binding Notes.DeleteSelectedNoteCommand}">
+						<MenuItem.Icon>
+							<WpfAvalonTest:AutoGreyableImage Source="Icons/Delete_Note.png" Width="16" Height="16"/>
+						</MenuItem.Icon>
+					</MenuItem>
+				</MenuItem>
+				<Separator/>
+				<MenuItem Header="Register profiler" Command="{Binding Path=RegisterProfilerCommand}"
+                           IsEnabled="{Binding ProfilingProcess.InProgress, Converter={StaticResource BoolInverter}}"/>
+				<MenuItem Header="Registrations"/>
+				<Separator/>
+                <MenuItem Header="Options" Command="{Binding ShowOptionCommand}"/>
+            </MenuItem>
+		</Menu>
+
+		<ToolBarTray Grid.Row="1" Background="#9CAAC1">
+			<ToolBar Background="#BCC7D8">
+				<Button ToolTip="Add new Note" Command="{Binding Notes.NewNoteCommand}">
+                    <WpfAvalonTest:AutoGreyableImage Source="Icons/paste_32x32.png" Width="16" Height="16"/>
+				</Button>
+				<Button ToolTip="Delete selected Note" Command="{Binding Notes.DeleteSelectedNoteCommand}">
+                    <WpfAvalonTest:AutoGreyableImage Source="Icons/Delete_Note.png" Width="16" Height="16"/>
+				</Button>
+			</ToolBar>
+            <ToolBar Background="#BCC7D8" IsEnabled="{Binding ProfilingProcess.InProgress, Converter={StaticResource BoolInverter}}">
+				<ToolBar.Resources>
+					<ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type System:Enum}" x:Key="odp">
+						<ObjectDataProvider.MethodParameters>
+							<x:Type TypeName="Model:NetFrameworkRuntime"/>
+						</ObjectDataProvider.MethodParameters>
+					</ObjectDataProvider>
+				</ToolBar.Resources>
+                <Button ToolTip="Launch application" Command="{Binding StartProfilingCommand}" CommandParameter="{x:Static Operations:ProfilingOperations.Executable}" 
+						Padding="0">
+                    <WpfAvalonTest:AutoGreyableImage Source="Icons/FormRunHS.png" />
+                </Button>
+                <Button ToolTip="Launch ASP.NET application" Command="{Binding StartProfilingCommand}" CommandParameter="{x:Static Operations:ProfilingOperations.IIS}" >
+                    <WpfAvalonTest:AutoGreyableImage Source="Icons/Web.png" Width="16" Height="16"/>
+                </Button>
+                <Button ToolTip="Stop profiling" Command="{Binding StopProfilingCommand}" Padding="0">
+                    <WpfAvalonTest:AutoGreyableImage Source="Icons/StopHS.png" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+				<ComboBox ItemsSource="{Binding Source={StaticResource odp}}" IsSynchronizedWithCurrentItem="true" Width="80"
+						  ToolTip="Framework version runtime" Name="runTimeBox" SelectedItem="{Binding SelectedRuntime}"/>
+			</ToolBar>
+        </ToolBarTray>
+
+		<avalonDock:DockingManager Grid.Row="2" AnchorablesSource="{Binding Tools}" DocumentsSource="{Binding Documents}"
+								    ActiveContent="{Binding ActiveDocument, Mode=TwoWay}" Name="dockManager">
+			<avalonDock:DockingManager.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="Resources/AvalonDataTemplates.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+
+                    <DataTemplate DataType="{x:Type Note:NotesViewModel}">
+						<ListBox ItemsSource="{Binding Notes}" MouseDoubleClick="ListBox_MouseDoubleClick" SelectedValue="{Binding SelectedNote}">
+							<ListBox.InputBindings>
+								<KeyBinding Gesture="Delete" Command="{Binding DeleteSelectedNoteCommand}"/>
+							</ListBox.InputBindings>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource NotesListBoxItem}"/>
+                            </ListBox.ItemContainerStyle>
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding Header}" FontSize="14"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DataTemplate>
+                </ResourceDictionary>
+            </avalonDock:DockingManager.Resources>
+
+			<avalonDock:DockingManager.LayoutItemContainerStyleSelector>
+					<WpfAvalonTest:ContainerStyleSelector>
+						<WpfAvalonTest:ContainerStyleSelector.AnchorDocumentStyle>
+							<Style TargetType="{x:Type avalonDock:LayoutItem}">
+								<Setter Property="Title" Value="{Binding Model.Title}"/>
+								<Setter Property="IconSource" Value="{Binding Model.Icon}"/>
+								<Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, 
+								Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Hidden}}"/>
+							</Style>
+						</WpfAvalonTest:ContainerStyleSelector.AnchorDocumentStyle>
+						<WpfAvalonTest:ContainerStyleSelector.DocumentStyle>
+							<Style TargetType="{x:Type avalonDock:LayoutItem}">
+								<Setter Property="Title" Value="{Binding Model.Title}"/>
+								<Setter Property="IconSource" Value="{Binding Model.Icon}"/>
+								<Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                                <Setter Property="CloseCommand" Value="{Binding Model.CloseDocumentCommand}"/>
+							</Style>
+						</WpfAvalonTest:ContainerStyleSelector.DocumentStyle>
+					</WpfAvalonTest:ContainerStyleSelector>
+				</avalonDock:DockingManager.LayoutItemContainerStyleSelector>
+
+			<avalonDock:DockingManager.Theme>
+				<avalonDock:VS2010Theme/>
+			</avalonDock:DockingManager.Theme>
+
+			<avalonDock:DockingManager.LayoutItemTemplate>
+				<DataTemplate>
+					<ContentControl Content="{Binding}"/>
+				</DataTemplate>
+			</avalonDock:DockingManager.LayoutItemTemplate>
+
+			<avalonDock:LayoutRoot>
+				<avalonDock:LayoutPanel Orientation="Horizontal">
+					<avalonDock:LayoutAnchorablePane DockWidth="250"/>
+					<avalonDock:LayoutDocumentPane/>
+				</avalonDock:LayoutPanel>
+			</avalonDock:LayoutRoot>
+		</avalonDock:DockingManager>
+
+		<StatusBar Grid.Row="3" Background="#3D5277" Foreground="White">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Status}" Foreground="White"/>
+            </StatusBarItem>
+        </StatusBar>
+	</Grid>
+</Window>

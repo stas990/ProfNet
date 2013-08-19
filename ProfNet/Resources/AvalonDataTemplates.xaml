@@ -1,0 +1,173 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:Model="clr-namespace:ProfNet.Model"
+                    xmlns:SettingsModel="clr-namespace:ProfNet.Model.Settings"
+                    xmlns:r="clr-namespace:Ricciolo.Controls;assembly=Ricciolo.Controls.TreeListView"
+                    xmlns:Profiling="clr-namespace:ProfNet.Model.Profiling"
+                    xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:behaviours="clr-namespace:ProfNet" xmlns:Notes="clr-namespace:ProfNet.Model.Notes">
+	<DataTemplate DataType="{x:Type Profiling:ProfilingResults}">
+		<Grid>
+			<r:TreeListView ItemsSource="{Binding Path=MethodInfos.Methods}">
+				<i:Interaction.Behaviors>
+					<behaviours:BindableSelectedItemBehaviour SelectedItem="{Binding SelectedMethod, Mode=TwoWay}" />
+				</i:Interaction.Behaviors>
+				<r:TreeListView.ItemsPanel>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel dd:DragDrop.IsDragSource="True"  dd:DragDrop.DragHandler="{Binding}"/>
+					</ItemsPanelTemplate>
+				</r:TreeListView.ItemsPanel>
+				<r:TreeListView.ItemTemplate>
+					<HierarchicalDataTemplate ItemsSource="{Binding Path=Childs}"/>
+				</r:TreeListView.ItemTemplate>
+				<r:TreeListView.Columns>
+					<GridViewColumn Header="Offset, ms" DisplayMemberBinding="{Binding Path=StartTime}" Width="auto" />
+					<GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" Width="auto" />
+					<GridViewColumn Header="Duration, ms" DisplayMemberBinding="{Binding Path=Duration}" Width="auto" />
+					<GridViewColumn Header="ThreadId" DisplayMemberBinding="{Binding Path=ThreadId}" Width="auto" />
+				</r:TreeListView.Columns>
+			</r:TreeListView>
+		</Grid>
+	</DataTemplate>
+
+    <DataTemplate DataType="{x:Type Notes:Note}">
+        <DataTemplate.Resources>
+            <DataTemplate DataType="{x:Type Profiling:MethodInfo}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Margin="3" Text="{Binding Name}"/>
+
+                    <r:TreeListView ItemsSource="{Binding Path=Childs}" Grid.Row="1">
+                        <r:TreeListView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Path=Childs}"/>
+                        </r:TreeListView.ItemTemplate>
+                        <r:TreeListView.Columns>
+                            <GridViewColumn Header="Offset, ms" DisplayMemberBinding="{Binding Path=StartTime}" Width="auto" />
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Path=Name}" Width="auto" />
+                            <GridViewColumn Header="Duration, ms" DisplayMemberBinding="{Binding Path=Duration}" Width="auto" />
+                            <GridViewColumn Header="ThreadId" DisplayMemberBinding="{Binding Path=ThreadId}" Width="auto" />
+                        </r:TreeListView.Columns>
+                    </r:TreeListView>
+                </Grid>
+            </DataTemplate>
+        </DataTemplate.Resources>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBox Text="{Binding Path=Header}" Margin="0,0,0,1.5"/>
+            
+            <TextBox Text="{Binding Path=Text}" Margin="0,0,0,1.5" AcceptsReturn="True" Grid.Row="1"/>
+
+            <GridSplitter ResizeDirection="Rows" Grid.Row="2" Width="Auto" Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+
+            <ContentControl Grid.Row="3" Margin="0,1.5,0,0" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="Content" Value="{Binding Tag}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=Content}" Value="{x:Null}">
+                                <Setter Property="ContentControl.Template">
+                                    <Setter.Value>
+                                        <ControlTemplate>
+                                            <Border Background="White" Grid.Row="1">
+                                                <Grid>
+                                                    <Rectangle StrokeDashArray="5.0" Stroke="LightGray" StrokeThickness="2" 
+																		   RadiusX="10" RadiusY="10" Margin="15"/>
+                                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Text="Drag here" 
+																		   FontSize="18" Foreground="LightGray"/>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+        </Grid>
+    </DataTemplate>
+    
+    <DataTemplate DataType="{x:Type SettingsModel:SettingsObject}">
+        <Grid Background="#FFBCC7D8">
+            <TabControl TabStripPlacement="Left" Margin="5">
+                <TabControl.Resources>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Padding" Value="15,10"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="Background" Value="#FFF0F0F0"/>
+                    </Style>
+                    
+                    <DataTemplate DataType="{x:Type SettingsModel:CommonSettings}">
+                        <Grid Margin="10,15" Width="600" HorizontalAlignment="Left">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="auto"/>
+								<RowDefinition/>
+							</Grid.RowDefinitions>
+							
+							<GroupBox Header="General">
+								<Grid Margin="5">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="auto"/>
+										<ColumnDefinition/>
+										<ColumnDefinition Width="auto"/>
+									</Grid.ColumnDefinitions>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="auto"/>
+										<RowDefinition Height="auto"/>
+										<RowDefinition/>
+									</Grid.RowDefinitions>
+
+									<TextBlock Text="Working directory : " VerticalAlignment="Center"/>
+									<TextBox Text="{Binding TmpFolder}" Grid.Column="1"/>
+									<Button Content="Browse..." Grid.Column="2" Width="80" Height="25" Margin="5,0,0,0" Command="{Binding SelectFolderCommand}"/>
+
+									<CheckBox Content="Clear automatically working directory" IsChecked="{Binding ClearTmpFolder}" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0"
+                                              HorizontalAlignment="Right" ToolTip="Clear working directory every profiling run"/>
+								</Grid>
+							</GroupBox>
+							
+                        </Grid>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type SettingsModel:PerformanceSettings}">
+						<Grid Margin="10,15" Width="600" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Threshold : " VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding Threshold}" Grid.Column="1" Grid.ColumnSpan="2"/>
+                        </Grid>
+                    </DataTemplate>
+                </TabControl.Resources>
+                <TabItem Header="Environment">
+                    <TabItem.Content>
+                        <ContentControl Content="{Binding Common}"/>
+                    </TabItem.Content>
+                </TabItem>
+                <TabItem Header="Performace">
+                    <TabItem.Content>
+                        <ContentControl Content="{Binding Performance}"/>
+                    </TabItem.Content>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>
