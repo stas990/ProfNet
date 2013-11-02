@@ -45,9 +45,9 @@ namespace ProfNet.Model.Settings
 				{
 					string[] logicalDrives = _environmentProvider.GetLogicalDrives();
 
-					if (logicalDrives.Any(x => x.Equals("d:\\", StringComparison.InvariantCultureIgnoreCase)))
+					if (logicalDrives.Any(x => x.Equals("c:\\", StringComparison.InvariantCultureIgnoreCase)))
 					{
-						_tmpFolder = "D:\\ProfNet_Temp";
+						_tmpFolder = "C:\\ProfNet_Temp";
 					}
 					else
 					{
