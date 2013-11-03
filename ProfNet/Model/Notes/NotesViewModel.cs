@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using System.IO;
 using System.Runtime.Serialization;
+using Microsoft.Practices.ServiceLocation;
 using ServiceStack.Text;
 
 namespace ProfNet.Model.Notes
@@ -15,13 +16,9 @@ namespace ProfNet.Model.Notes
 		private Note _selectedNote;
 		private readonly INoteProvider _provider;
 
-		public NotesViewModel() : this(new NoteProvider())
+		public NotesViewModel()
 		{
-		}
-
-		internal NotesViewModel(INoteProvider provider)
-		{
-			_provider = provider;
+			_provider = ServiceLocator.Current.GetInstance<INoteProvider>();
 			_addNewNoteCommand = new RelayCommand(AddNewNote, x => true);
 			_deleteNoteCommand = new RelayCommand(DeleteSelectedNote, x => SelectedNote != null);
 		}
@@ -65,7 +62,7 @@ namespace ProfNet.Model.Notes
 
 		private void AddNewNote(object arg)
 		{
-			NewNoteWindow newNoteWindow = new NewNoteWindow();
+			var newNoteWindow = new NewNoteWindow();
 			bool? dialogResult = newNoteWindow.ShowDialog();
 			if(dialogResult.HasValue && dialogResult.Value)
 				Notes.Add(new Note{Header = newNoteWindow.NoteName});

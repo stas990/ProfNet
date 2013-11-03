@@ -2,11 +2,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Microsoft.Practices.ServiceLocation;
+using Microsoft.Practices.Unity;
 using Moq;
 using NUnit.Framework;
 using ProfNet.Model;
 using ProfNet.Model.Profiling.Operations;
 using ProfNet.Model.Profiling.ProcessModel;
+using ProfNet.Model.Settings;
 
 namespace ProfNet.Tests.Profiling
 {
@@ -18,23 +21,31 @@ namespace ProfNet.Tests.Profiling
 
 		private readonly Mock<IIOFileSystemService> _fileSystem = new Mock<IIOFileSystemService>();
 
+		private UnityContainer _container;
+
 		[TestFixtureSetUp]
 		public void Setup()
 		{
-			string fileName = "D:\\SomeFolder\\FileName.exe";
+			const string fileName = "D:\\SomeFolder\\FileName.exe";
 			_fileSystem.Setup(x => x.OpenFileDialog(It.IsAny<string>())).Returns(fileName);
+
+			_container = new UnityContainer();
+			_container.RegisterInstance(typeof(IIOFileSystemService), _fileSystem.Object);
+			_container.RegisterInstance(typeof (IEnvironmentProvider), new EnvironmentProvider());
+			ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(_container));
 		}
 
 		[Test(Description = "Environment variables test")]
 		public void ExecutableOperationTest1()
 		{
-			Mock<IProcess> process = new Mock<IProcess>();
-			Mock<IProcessProvider> processProvider = new Mock<IProcessProvider>();
-			ProcessStartInfo processStartInfo = new ProcessStartInfo();
+			var process = new Mock<IProcess>();
+			var processProvider = new Mock<IProcessProvider>();
+			var processStartInfo = new ProcessStartInfo();
 			processProvider.Setup(x => x.Start(It.IsAny<ProcessStartInfo>())).Returns(process.Object).Callback<ProcessStartInfo>(x => processStartInfo = x);
 
-			ExecutableProfilingOperation executableProfiling = new ExecutableProfilingOperation(processProvider.Object);
-			executableProfiling.FileSystem = _fileSystem.Object;
+			_container.RegisterInstance(typeof (IProcessProvider), processProvider.Object);
+
+			var executableProfiling = new ExecutableProfilingOperation();
 			executableProfiling.StartProfiling();
 			executableProfiling.DetachProfiler();
 
@@ -48,17 +59,17 @@ namespace ProfNet.Tests.Profiling
 		[Test]
 		public void ExecutableOperationTest2()
 		{
-			System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+			var encoding = new System.Text.UTF8Encoding();
 			_fileSystem.Setup(x => x.OpenFileRead(It.IsAny<string>())).Returns(new MemoryStream(encoding.GetBytes(MockResult)));
 			_fileSystem.Setup(x => x.FileExist(It.IsAny<string>())).Returns(true);
 
-			Mock<IProcess> process = new Mock<IProcess>();
-			Mock<IProcessProvider> processProvider = new Mock<IProcessProvider>();
-			ProcessStartInfo processStartInfo;
-			processProvider.Setup(x => x.Start(It.IsAny<ProcessStartInfo>())).Returns(process.Object).Callback<ProcessStartInfo>(x => processStartInfo = x);
+			var process = new Mock<IProcess>();
+			var processProvider = new Mock<IProcessProvider>();
+			processProvider.Setup(x => x.Start(It.IsAny<ProcessStartInfo>())).Returns(process.Object);
 
-			ExecutableProfilingOperation executableProfiling = new ExecutableProfilingOperation(processProvider.Object);
-			executableProfiling.FileSystem = _fileSystem.Object;
+			_container.RegisterInstance(typeof(IProcessProvider), processProvider.Object);
+
+			var executableProfiling = new ExecutableProfilingOperation();
 			bool profilingFinishedRaised = false;
 			executableProfiling.ProfilingFinished += () => profilingFinishedRaised = true;
 			executableProfiling.StartProfiling();

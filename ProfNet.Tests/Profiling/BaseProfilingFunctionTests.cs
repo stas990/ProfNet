@@ -14,10 +14,10 @@ namespace ProfNet.Tests.Profiling
 	{
 		private void RunPipeServer(object message)
 		{
-			using (NamedPipeServerStream server = new NamedPipeServerStream(NamedPipeMessanger.PipeName))
+			using (var server = new NamedPipeServerStream(NamedPipeMessanger.PipeName))
 			{
 				server.WaitForConnection();
-				using (StreamWriter streamWriter = new StreamWriter(server))
+				using (var streamWriter = new StreamWriter(server))
 				{
 					streamWriter.WriteLine(message);
 					streamWriter.Flush();
@@ -30,8 +30,8 @@ namespace ProfNet.Tests.Profiling
 		{
 			string processId = "ProcessId 1234";
 
-			MockProfilingOperation mockProfiling = new MockProfilingOperation();
-			AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+			var mockProfiling = new MockProfilingOperation();
+			var autoResetEvent = new AutoResetEvent(false);
 			Task.Factory.StartNew(RunPipeServer, processId);
 			
 			mockProfiling.ProfilingFinished += () =>
@@ -52,9 +52,9 @@ namespace ProfNet.Tests.Profiling
 		{
 			string failed = "Failed SomeMessage";
 
-			MockProfilingOperation mockProfiling = new MockProfilingOperation();
+			var mockProfiling = new MockProfilingOperation();
 			Task.Factory.StartNew(RunPipeServer, failed);
-			AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+			var autoResetEvent = new AutoResetEvent(false);
 			mockProfiling.ProfilingFinished += () =>
 				autoResetEvent.Set();
 

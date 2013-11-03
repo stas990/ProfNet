@@ -1,5 +1,8 @@
-﻿using Moq;
+﻿using Microsoft.Practices.ServiceLocation;
+using Microsoft.Practices.Unity;
+using Moq;
 using NUnit.Framework;
+using ProfNet.Model;
 using ProfNet.Model.Settings;
 
 namespace ProfNet.Tests.Settings
@@ -10,19 +13,23 @@ namespace ProfNet.Tests.Settings
 		[Test]
 		public void TempFolderTest()
 		{
-			Mock<IEnvironmentProvider> environmentProvider = new Mock<IEnvironmentProvider>();
+			var environmentProvider = new Mock<IEnvironmentProvider>();
 			environmentProvider.Setup(x => x.GetLogicalDrives()).Returns(new[] {"C:\\", "D:\\"});
 			environmentProvider.Setup(x => x.GetTempFolder()).Returns("C:\\someFolder");
 
-			CommonSettings commonSettings = new CommonSettings(environmentProvider.Object);
+			var container = new UnityContainer();
+			container.RegisterInstance(typeof(IEnvironmentProvider), environmentProvider.Object);
+			ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(container));
+
+			var commonSettings = new CommonSettings();
 			Assert.AreEqual("D:\\ProfNet_Temp", commonSettings.TmpFolder);
 
 			environmentProvider.Setup(x => x.GetLogicalDrives()).Returns(new[] { "C:\\" });
-			commonSettings = new CommonSettings(environmentProvider.Object);
+			commonSettings = new CommonSettings();
 			Assert.AreEqual("C:\\someFolder\\ProfNet_Temp", commonSettings.TmpFolder);
 
 			environmentProvider.Setup(x => x.GetTempFolder()).Returns("");
-			commonSettings = new CommonSettings(environmentProvider.Object);
+			commonSettings = new CommonSettings();
 			Assert.IsNullOrEmpty(commonSettings.TmpFolder);
 			Assert.IsFalse(commonSettings.IsValidSetting);
 			Assert.IsNotEmpty(commonSettings.ValidationMessages);

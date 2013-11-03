@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProfNet.Model
@@ -41,7 +40,7 @@ namespace ProfNet.Model
 					try
 					{
 						_pipe.Connect(1000);
-						using (StreamReader reader = new StreamReader(_pipe))
+						using (var reader = new StreamReader(_pipe))
 						{
 							string message = reader.ReadToEnd();
 							string enumString = Enums.FirstOrDefault(message.StartsWith);

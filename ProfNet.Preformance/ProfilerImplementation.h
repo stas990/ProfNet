@@ -53,4 +53,6 @@ private:
 
 	void ReadSettings();
 	HRESULT CommonInitialization(IUnknown *pICorProfilerInfoUnk, bool canSetHooks, DWORD eventMask);
+
+	static void AsyncReciveResults(void *params);
 };

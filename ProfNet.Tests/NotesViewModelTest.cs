@@ -1,9 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.Practices.ServiceLocation;
+using Microsoft.Practices.Unity;
 using Moq;
 using NUnit.Framework;
 using ProfNet.Model;
 using ProfNet.Model.Notes;
+using ProfNet.Model.Settings;
 
 namespace ProfNet.Tests
 {
@@ -13,11 +16,15 @@ namespace ProfNet.Tests
 		[Test(Description = "Also include Save and Load testing")]
 		public void DeleteSelectedNote()
 		{
-			Mock<INoteProvider> noteProvider = new Mock<INoteProvider>();
+			var noteProvider = new Mock<INoteProvider>();
 			noteProvider.Setup(x => x.TryLoadNotes()).Returns(new ObservableCollection<Note>());
 			noteProvider.Setup(x => x.SaveNotes(It.IsAny<ObservableCollection<Note>>()));
 
-			NotesViewModel notesView = new NotesViewModel(noteProvider.Object);
+			var container = new UnityContainer();
+			container.RegisterInstance(typeof(INoteProvider), noteProvider.Object);
+			ServiceLocator.SetLocatorProvider(() => new UnityServiceLocator(container));
+
+			var notesView = new NotesViewModel();
 			notesView.Notes.Add(new Note{Header = "Note1"});
 			notesView.Notes.Add(new Note { Header = "Note2" });
 			notesView.Notes.Add(new Note { Header = "Note3" });

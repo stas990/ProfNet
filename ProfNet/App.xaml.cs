@@ -30,13 +30,13 @@ namespace ProfNet
 			if (!Directory.Exists(AppDirectory))
 				Directory.CreateDirectory(AppDirectory);
 
+			var bootstrapper = new Bootstrapper();
+			bootstrapper.Run();
+
 			if (!string.IsNullOrEmpty(SettingsObject.Instance.Common.TmpFolder) && !Directory.Exists(SettingsObject.Instance.Common.TmpFolder))
 				Directory.CreateDirectory(SettingsObject.Instance.Common.TmpFolder);
 
 			base.OnStartup(e);
-
-			Bootstrapper bootstrapper = new Bootstrapper();
-			bootstrapper.Run();
 		}
 	}
 }

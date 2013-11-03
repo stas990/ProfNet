@@ -46,7 +46,7 @@ class CClassFactory : public IClassFactory
                                 return InterlockedDecrement( &m_refCount );
                             }
 
-        COM_METHOD( HRESULT ) QueryInterface(REFIID riid, void **ppInterface );         
+        COM_METHOD( HRESULT ) QueryInterface(REFIID riid, void **ppInterface );
         
         // IClassFactory methods
         COM_METHOD( HRESULT ) LockServer( BOOL fLock ) { return S_OK; }

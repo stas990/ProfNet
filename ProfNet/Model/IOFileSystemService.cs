@@ -8,7 +8,7 @@ namespace ProfNet.Model
 	{
 		public string OpenFileDialog(string filter)
 		{
-			OpenFileDialog openFileDialog = new OpenFileDialog {Multiselect = false, Filter = filter};
+			var openFileDialog = new OpenFileDialog {Multiselect = false, Filter = filter};
 			if (openFileDialog.ShowDialog().Value)
 			{
 				return openFileDialog.FileName;

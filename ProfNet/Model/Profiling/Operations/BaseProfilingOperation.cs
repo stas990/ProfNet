@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Windows;
+using Microsoft.Practices.ServiceLocation;
 using ProfNet.Helpers;
 using ProfNet.Model.Settings;
 using ServiceStack.Text;
@@ -12,6 +13,8 @@ namespace ProfNet.Model.Profiling.Operations
 {
 	public abstract class BaseProfilingOperation : INotifyPropertyChanged
 	{
+		private IIOFileSystemService _fileSystem;
+
 		public event Action ProfilingFinished = delegate{};
 		public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
@@ -29,8 +32,6 @@ namespace ProfNet.Model.Profiling.Operations
 													changeStatus(x);
 			                            	};
 			Messanger.SpecificMessageRecived += SpecificMessageRecived;
-
-			FileSystem = new IOFileSystemService();
 		}
 
 		public void StartProfiling()
@@ -73,7 +74,10 @@ namespace ProfNet.Model.Profiling.Operations
 
 		public ProfilingResults Results { set; get; }
 
-		internal IIOFileSystemService FileSystem { set; get; }
+		protected IIOFileSystemService FileSystem
+		{
+			get { return _fileSystem ?? (_fileSystem = ServiceLocator.Current.GetInstance<IIOFileSystemService>()); }
+		}
 
 		protected string WorkingDirectory { private set; get; }
 

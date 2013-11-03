@@ -296,6 +296,16 @@ HRESULT ProfilerImplementation::QueryInterface(REFIID riid, void **ppInterface )
 	return S_OK;
 }
 
+void ProfilerImplementation::AsyncReciveResults(void *params)
+{
+	ProfilerImplementation *implementation = static_cast<ProfilerImplementation*>(params);
+
+	PipeMessanger::Send("Thread Created");
+	Logger::Log("Thread Created");
+
+	_endthread();
+}
+
 HRESULT ProfilerImplementation::Initialize(IUnknown *pICorProfilerInfoUnk)
 {
 	Logger::Log("Beginning of the initialization");
@@ -316,6 +326,8 @@ HRESULT ProfilerImplementation::Initialize(IUnknown *pICorProfilerInfoUnk)
 	
 	Sleep(100); // Give the threads a chance to read any signals that are already set.
 	
+	_beginthread(AsyncReciveResults, 0, (void *)this);
+
 	PipeMessanger::Send("Profiler Initialized");
 
 	return S_OK;

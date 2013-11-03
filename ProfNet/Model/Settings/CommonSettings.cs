@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
+using Microsoft.Practices.ServiceLocation;
 
 namespace ProfNet.Model.Settings
 {
@@ -18,12 +19,7 @@ namespace ProfNet.Model.Settings
 		public CommonSettings()
 		{
 			_selectFolder = new RelayCommand(SelectFolder, x => true);
-			_environmentProvider = new EnvironmentProvider();
-		}
-
-		internal CommonSettings(IEnvironmentProvider provider) : this()
-		{
-			_environmentProvider = provider;
+			_environmentProvider = ServiceLocator.Current.GetInstance<IEnvironmentProvider>();
 		}
 
 		public RelayCommand SelectFolderCommand
@@ -47,7 +43,7 @@ namespace ProfNet.Model.Settings
 
 					if (logicalDrives.Any(x => x.Equals("c:\\", StringComparison.InvariantCultureIgnoreCase)))
 					{
-						_tmpFolder = "C:\\ProfNet_Temp";
+						_tmpFolder = "c:\\ProfNet_Temp";
 					}
 					else
 					{
@@ -92,7 +88,7 @@ namespace ProfNet.Model.Settings
 
 		private void SelectFolder(object arg)
 		{
-			using (FolderBrowserDialog browserDialog = new FolderBrowserDialog())
+			using (var browserDialog = new FolderBrowserDialog())
 			{
 				browserDialog.SelectedPath = TmpFolder;
 				if(browserDialog.ShowDialog() == DialogResult.OK)

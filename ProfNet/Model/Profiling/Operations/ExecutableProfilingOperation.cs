@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Windows;
-using ProfNet.Helpers;
+using Microsoft.Practices.ServiceLocation;
 using ProfNet.Model.Profiling.ProcessModel;
-using ProfNet.Model.Settings;
 
 namespace ProfNet.Model.Profiling.Operations
 {
@@ -14,12 +11,9 @@ namespace ProfNet.Model.Profiling.Operations
 	{
 		private readonly IProcessProvider _processProvider;
 
-		public ExecutableProfilingOperation(IProcessProvider provider = null)
+		public ExecutableProfilingOperation()
 		{
-			if (provider == null)
-				_processProvider = new ProcessProvider();
-			else
-				_processProvider = provider;
+			_processProvider = ServiceLocator.Current.GetInstance<IProcessProvider>();
 		}
 
 		protected override bool StartProfilingInternal(IEnumerable<KeyValuePair<string, string>> environmentVariables)
@@ -30,7 +24,7 @@ namespace ProfNet.Model.Profiling.Operations
 			{
 				try
 				{
-					ProcessStartInfo startInfo = new ProcessStartInfo(exePath) { UseShellExecute = false };
+					var startInfo = new ProcessStartInfo(exePath) { UseShellExecute = false };
 					foreach (KeyValuePair<string, string> environmentVariable in environmentVariables)
 						startInfo.EnvironmentVariables.Add(environmentVariable.Key, environmentVariable.Value);
 
@@ -66,7 +60,7 @@ namespace ProfNet.Model.Profiling.Operations
 
 		private void ProcessExited(object sender, EventArgs e)
 		{
-			Process process = sender as Process;
+			var process = sender as Process;
 			if (process != null)
 				process.Exited -= ProcessExited;
 
